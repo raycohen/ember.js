@@ -2541,3 +2541,48 @@ test("Route model hook finds the same model as a manual find", function() {
 
   equal(App.Post, Post);
 });
+
+test('Nested Ember App Should Render', function () {
+  App.Router.map(function() {
+    this.route('inner', {path: '/'});
+  });
+
+  App.IndexView = Ember.View.extend({
+    template: Ember.Handlebars.compile("<div class='nested-app'></div>"),
+    didInsertElement: function() {
+      this._super();
+
+      var nestedRouter = Router.map(function () {});
+
+      var NestedApp = Ember.Application.create({
+        rootElement: this.$('.nested-app')[0],
+        Router: Ember.Router.extend({
+          location: "none",
+          router: nestedRouter
+        })
+      });
+      var NestedIndexView = Ember.View.extend({
+        template: Ember.Handlebars.compile("<p>NESTED INDEX</p>"),
+        click: function() {
+          //
+        }
+      });
+      NestedApp.register('view:index', NestedIndexView);
+      this.set('NestedApp', NestedApp);
+    },
+    willDestroyElement: function() {
+      this.get('NestedApp').destroy();
+    }
+  });
+
+  App.HomeController = Ember.Controller.extend();
+  App.HomeRoute = Ember.Route.extend();
+
+  bootApplication();
+
+  Ember.run(function () {
+    router.handleURL("/");
+  });
+
+  equal(Ember.$('p', '#qunit-fixture').text(), "NESTED INDEX", "The home view of the nested ember app was rendered");
+});

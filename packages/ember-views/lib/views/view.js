@@ -1486,7 +1486,11 @@ Ember.View = Ember.CoreView.extend(
     // element after bindings have synchronized.
     this._insertElementLater(function() {
       Ember.assert("You tried to append to (" + target + ") but that isn't in the DOM", Ember.$(target).length > 0);
-      Ember.assert("You cannot append to an existing Ember.View. Consider using Ember.ContainerView instead.", !Ember.$(target).is('.ember-view') && !Ember.$(target).parents().is('.ember-view'));
+
+      // this is not completely correct.  Really depends where appendTo is called from
+      if (!Ember.$(target).is('.ember-application')) {
+        Ember.assert("You cannot append to an existing Ember.View. Consider using Ember.ContainerView instead.", !Ember.$(target).is('.ember-view') && !Ember.$(target).parents().is('.ember-view'));
+      }
       this.$().appendTo(target);
     });
 
